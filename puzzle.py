@@ -21,45 +21,15 @@ class Puzzle:
                 if(value==self.n**2):
                     return (i,j)
 
-    # Move empty cell up
-    def move_up(self):
+    # Move empty cell to (r+dr, c+dc)
+    def move(self, dr, dc):
         (r, c) = self.find_empty()
-        if(r==0):
-            return None
+        if(r+dr>=0 and r+dr<self.n and c+dc>=0 and c+dc<self.n):
+            moved_puzzle = copy.deepcopy(self)
+            moved_puzzle.board[r][c], moved_puzzle.board[r+dr][c+dc] = moved_puzzle.board[r+dr][c+dc], moved_puzzle.board[r][c]
+            return moved_puzzle
         else:
-            new_puzzle = copy.deepcopy(self)    
-            new_puzzle.board[r][c], new_puzzle.board[r-1][c] = new_puzzle.board[r-1][c], new_puzzle.board[r][c]
-            return new_puzzle 
-    
-    # Move empty cell down
-    def move_down(self):
-        (r, c) = self.find_empty()
-        if(r==self.n-1):
             return None
-        else:
-            new_puzzle = copy.deepcopy(self)    
-            new_puzzle.board[r][c], new_puzzle.board[r+1][c] = new_puzzle.board[r+1][c], new_puzzle.board[r][c]
-            return new_puzzle
-
-    # Move empty cell left
-    def move_left(self):
-        (r, c) = self.find_empty()
-        if(c==0):
-            return None
-        else:
-            new_puzzle = copy.deepcopy(self)    
-            new_puzzle.board[r][c], new_puzzle.board[r][c-1] = new_puzzle.board[r][c-1], new_puzzle.board[r][c]
-            return new_puzzle
-    
-    # Move empty cell right
-    def move_right(self):
-        (r, c) = self.find_empty()
-        if(c==self.n-1):
-            return None
-        else:
-            new_puzzle = copy.deepcopy(self)    
-            new_puzzle.board[r][c], new_puzzle.board[r][c+1] = new_puzzle.board[r][c+1], new_puzzle.board[r][c]
-            return new_puzzle
 
     # Test whether the puzzle is solvable or not
     def is_solveable(self):

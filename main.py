@@ -1,15 +1,31 @@
+import time
 from puzzle import Puzzle
 from priorityqueue import PriorityQueue
 from statespacetree import StateSpaceTree
 
 # g(i) function for checking misplaced tiles
-def check_false_tiles(puzzle):
+def check_misplaced_tiles(puzzle):
     result = 0
     flat = puzzle.flattened_board()
     
     for i in range(1, puzzle.n**2+1):
         if(flat[i-1] != i):
             result+=1
+
+    return result
+
+# g(i) function for checking Manhattan Distance
+def check_manhattan_distance(puzzle):
+    result = 0
+    flat = puzzle.flattened_board()
+
+    for index in range(0, puzzle.n**2):
+        cur = flat[index]
+        if(cur!=puzzle.n**2):
+            cur_r, cur_c = (cur-1) // puzzle.n, (cur-1) % puzzle.n
+            index_r, index_c = index // puzzle.n, index % puzzle.n
+
+            result += abs(index_r - cur_r) + abs(index_c - cur_c)
 
     return result
 
@@ -24,65 +40,87 @@ def check_final_state(puzzle):
     return True
 
 def generate_solution(solved_state):
-    moves = ["Up", "Left", "Right", "Down"]
     solution = []
+
     state = solved_state.parent
     prev = solved_state
 
     while(state != None):
-        move = ""
-        
-        # Find branch
-        for i in range(4):
-            if(state.branches[i] == prev):
-                move = moves[i]
-                break
-        solution.insert(0, (move, prev) )
-
-        prev = state
-        state =  state.parent
-        if(state != None and state.parent != None):
-            state.branches =  state.parent.branches
-
+       solution.insert(0,prev) 
+       prev = state
+       state = state.parent
     
     return solution
 
+# Filename input
+filename = input("Enter filename: ")
+
 # Initiate root
-root = StateSpaceTree( Puzzle("./input/1.txt") )
+root = StateSpaceTree( Puzzle("./input/" + filename) )
+root.root.output_board()
+
+# Node generated count
+node_count = 1
 
 # Make priority queue for branching
-pq = PriorityQueue(lambda x,y : x.depth + check_false_tiles(x.root) < y.depth + check_false_tiles(y.root))
+# On priority : lowest cost first
+pq = PriorityQueue(lambda x,y : x.depth + check_misplaced_tiles(x.root) <= y.depth + check_misplaced_tiles(y.root))
 
 # Initiate priority queue
-pq.push( root )
+pq.push(root)
 
+# Variable to store solution state
 solution_state = None
 
+
+# List possible moves for puzzle
+# Respectively : Up, Left, Right, Down
+moves_units = [(-1,0), (0,-1), (1,0), (0,1)]
+moves_names = ["Up", "Left", "Down", "Right"]
+
+# Start timer
+time_start = time.process_time_ns()
+
+# Searching for solution using Branch and Bound
 while(not pq.is_empty()):
+    # Get front item in queue
     current = pq.front()
     pq.pop()
 
-    # Output current processed board
-    current.root.output_board()
-
+    # If currently checking final state, save
     if(check_final_state(current.root)):
         solution_state = current
         break
 
-    # Generate state in tree
-    current.create_states()
-
     # Append generate states to pq
-    for state in current.branches:
-        if(state != None and state.root != None):
-            pq.push(state)
-    
+    for i, (dr, dc) in enumerate(moves_units):
+        if(moves_names[(i+2)%4] != current.move):
+            result = StateSpaceTree(current.root.move(dr, dc), parent=current, depth=current.depth+1, move=moves_names[i])
+            if(result != None and result.root != None):
+                node_count += 1
+                pq.push( result )
 
+# Generate solution from result
 solution_array = generate_solution(solution_state)
 
-for index, (move,state) in enumerate(solution_array):
-    print("Step", str(index+1) + ":", move , "-----")
+# Stop timer
+time_stop = time.process_time_ns()
+
+time_delta = time_stop - time_start
+
+# Output solution
+for index, state in enumerate(solution_array):
+    print("Step", str(index+1) + ":", state.move , "-----")
     state.root.output_board()
+    print()
 
+# Output details
+print("Total moves:", len(solution_array))
+shorthand = ""
+for i in range(len(solution_array)):
+    shorthand += solution_array[i].move[0] + " "
+shorthand += "Solved"
+print(shorthand)
 
-print("Solved")
+print(node_count,"nodes generated")
+print(time_delta / 1000000, "ms taken")
