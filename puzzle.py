@@ -36,7 +36,7 @@ class Puzzle:
         (r, c) = self.find_empty()
 
         # Flatten board
-        tmp = [self.board[i][j] for i in range(self.n) for j in range(self.n)]
+        tmp = self.flattened_board()
 
         # Find empty cell offset
         x = (r+c) % 2 if (self.n % 2 == 0) else 0
@@ -47,8 +47,10 @@ class Puzzle:
                 if(tmp[i]>tmp[j]):
                     sum+=1
 
+        # Output value for verdict
         print("Inversions:", sum)
-        print("Offset:", x)
+        print("Parity:", x)
+        print("Total:", sum + x, "(even)" if (sum+x) % 2 == 0 else "(odd)")
 
         return (sum + x) % 2 == 0
 

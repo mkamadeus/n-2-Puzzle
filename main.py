@@ -39,6 +39,7 @@ def check_final_state(puzzle):
 
     return True
 
+# Generate solution from solved node
 def generate_solution(solved_state):
     solution = []
 
@@ -58,12 +59,21 @@ filename = input("Enter filename: ")
 # Initiate root
 root = StateSpaceTree( Puzzle("./input/" + filename) )
 root.root.output_board()
+print()
+
+# Check if puzzle is solveable
+if(not root.root.is_solveable()):
+    print("Puzzle is unsolveable.")
+    exit
+
+print("Puzzle is solveable.")
+print()
 
 # Node generated count
 node_count = 1
 
 # Make priority queue for branching
-# On priority : lowest cost first
+# On priority : lowest cost with last in first
 pq = PriorityQueue(lambda x,y : x.depth + check_misplaced_tiles(x.root) <= y.depth + check_misplaced_tiles(y.root))
 
 # Initiate priority queue
@@ -72,9 +82,7 @@ pq.push(root)
 # Variable to store solution state
 solution_state = None
 
-
 # List possible moves for puzzle
-# Respectively : Up, Left, Right, Down
 moves_units = [(-1,0), (0,-1), (1,0), (0,1)]
 moves_names = ["Up", "Left", "Down", "Right"]
 
@@ -106,8 +114,6 @@ solution_array = generate_solution(solution_state)
 # Stop timer
 time_stop = time.process_time_ns()
 
-time_delta = time_stop - time_start
-
 # Output solution
 for index, state in enumerate(solution_array):
     print("Step", str(index+1) + ":", state.move , "-----")
@@ -122,5 +128,9 @@ for i in range(len(solution_array)):
 shorthand += "Solved"
 print(shorthand)
 
+# Output nodes generated
 print(node_count,"nodes generated")
+
+# Output time
+time_delta = time_stop - time_start
 print(time_delta / 1000000, "ms taken")
