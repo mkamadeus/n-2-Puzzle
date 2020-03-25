@@ -1,4 +1,8 @@
+# main.py
+# Contains main program and several functions for aiding Branch and Bound
+
 import time
+import argparse
 from puzzle import Puzzle
 from priorityqueue import PriorityQueue
 from statespacetree import StateSpaceTree
@@ -53,6 +57,13 @@ def generate_solution(solved_state):
     
     return solution
 
+# -=-=-=-=- MAIN PROGRAM -=-=-=-=- #
+
+# Parsing arguments
+argument_parser = argparse.ArgumentParser(prog='python main.py',description='Generate solution to 15 puzzle. Can be extended to n^2 - 1 puzzles.')
+argument_parser.add_argument('-sh', '--shorthand', action='store_true', help='print out the shorthand solution only')
+args = argument_parser.parse_args()
+
 # Filename input
 filename = input("Enter filename: ")
 
@@ -64,7 +75,7 @@ print()
 # Check if puzzle is solveable
 if(not root.root.is_solveable()):
     print("Puzzle is unsolveable.")
-    exit
+    exit()
 
 print("Puzzle is solveable.")
 print()
@@ -74,7 +85,7 @@ node_count = 1
 
 # Make priority queue for branching
 # On priority : lowest cost with last in first
-pq = PriorityQueue(lambda x,y : x.depth + check_misplaced_tiles(x.root) <= y.depth + check_misplaced_tiles(y.root))
+pq = PriorityQueue(lambda x,y : x.depth + check_manhattan_distance(x.root) <= y.depth + check_manhattan_distance(y.root))
 
 # Initiate priority queue
 pq.push(root)
@@ -95,15 +106,19 @@ while(not pq.is_empty()):
     current = pq.front()
     pq.pop()
 
-    # If currently checking final state, save
+    # If currently checking final state, save the current state
     if(check_final_state(current.root)):
         solution_state = current
         break
 
     # Append generate states to pq
     for i, (dr, dc) in enumerate(moves_units):
+        # If moves are NOT opposite to previous move, generate new node
         if(moves_names[(i+2)%4] != current.move):
+            # Generate node
             result = StateSpaceTree(current.root.move(dr, dc), parent=current, depth=current.depth+1, move=moves_names[i])
+
+            # If move is possible..
             if(result != None and result.root != None):
                 node_count += 1
                 pq.push( result )
@@ -115,18 +130,19 @@ solution_array = generate_solution(solution_state)
 time_stop = time.process_time_ns()
 
 # Output solution
-for index, state in enumerate(solution_array):
-    print("Step", str(index+1) + ":", state.move , "-----")
-    state.root.output_board()
-    print()
+if(not args.shorthand):
+    for index, state in enumerate(solution_array):
+        print("Step", str(index+1) + ":", state.move , "-----")
+        state.root.output_board()
+        print()
 
 # Output details
 print("Total moves:", len(solution_array))
-shorthand = ""
+shorthand_solution = ""
 for i in range(len(solution_array)):
-    shorthand += solution_array[i].move[0] + " "
-shorthand += "Solved"
-print(shorthand)
+    shorthand_solution += solution_array[i].move[0] + " "
+shorthand_solution += "Solved"
+print(shorthand_solution)
 
 # Output nodes generated
 print(node_count,"nodes generated")

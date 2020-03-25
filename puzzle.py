@@ -1,3 +1,6 @@
+# puzzle.py
+# Containing Puzzle class to represent states
+
 import copy
 from priorityqueue import PriorityQueue
 class Puzzle:
@@ -33,13 +36,14 @@ class Puzzle:
 
     # Test whether the puzzle is solvable or not
     def is_solveable(self):
+        # Get empty cell location
         (r, c) = self.find_empty()
 
         # Flatten board
         tmp = self.flattened_board()
 
-        # Find empty cell offset
-        x = (r+c) % 2 if (self.n % 2 == 0) else 0
+        # Find empty cell parity
+        x = (r+c) % 2
 
         sum = 0
         for i in range(0,self.n**2):
