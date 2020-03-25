@@ -61,14 +61,13 @@ def generate_solution(solved_state):
 
 # Parsing arguments
 argument_parser = argparse.ArgumentParser(prog='python main.py',description='Generate solution to 15 puzzle. Can be extended to n^2 - 1 puzzles.')
+argument_parser.add_argument('filename', metavar='filename', type=str, help='filename of puzzle to be solved')
 argument_parser.add_argument('-sh', '--shorthand', action='store_true', help='print out the shorthand solution only')
+argument_parser.add_argument('-md', '--manhattandist', action='store_true', help='calculate solution using Manhattan distance')
 args = argument_parser.parse_args()
 
-# Filename input
-filename = input("Enter filename: ")
-
 # Initiate root
-root = StateSpaceTree( Puzzle("./input/" + filename) )
+root = StateSpaceTree( Puzzle("../test/" + args.filename) )
 root.root.output_board()
 print()
 
@@ -85,7 +84,11 @@ node_count = 1
 
 # Make priority queue for branching
 # On priority : lowest cost with last in first
-pq = PriorityQueue(lambda x,y : x.depth + check_manhattan_distance(x.root) <= y.depth + check_manhattan_distance(y.root))
+cost_function = check_misplaced_tiles
+if(args.manhattandist):
+    cost_function = check_manhattan_distance
+
+pq = PriorityQueue(lambda x,y : x.depth + cost_function(x.root) <= y.depth + cost_function(y.root))
 
 # Initiate priority queue
 pq.push(root)

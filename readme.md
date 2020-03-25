@@ -10,7 +10,12 @@ Having Python 3.
 ## Running the project
 Type in into command line:
 ```bash
-python main.py
+python main.py [filename]
 ```
 
-The main program will be run, and you will be greeted with a prompt, which is meant to input the filename. Your file will be located in the `input` directory.
+The main program will solve your input located in the `test` directory.
+
+Some arguments that may help:
+* `-md` or `--manhattandist` will solve your puzzle using the Manhattan Distance method.
+* `-sh` or `--shorthand` will output only the shorthand version of the solution.
+* `-h` or `--help` will show the use of these arguments.
